@@ -21,16 +21,19 @@ Git是一个 “分布式版本管理工具”，简单的理解版本管理工�
 ## 目录
 * [展示帮助信息](#展示帮助信息)
 * [回到远程仓库的状态](#回到远程仓库的状态)
-* [重设第一个commit](#重设第一个commit)
+* [重设第一个commit](#重设第一个-commit)
+* [查看冲突文件列表](#查看冲突文件列表)
 * [展示工作区和暂存区的不同](#展示工作区和暂存区的不同)
 * [展示暂存区和最近版本的不同](#展示暂存区和最近版本的不同)
 * [展示暂存区、工作区和最近版本的不同](#展示暂存区工作区和最近版本的不同)
-* [快速切换分支上一个分支](#快速切换分支上一个分支)
+* [快速切换到上一个分支](#快速切换到上一个分支)
 * [删除已经合并到 master 的分支](#删除已经合并到-master-的分支)
 * [展示本地分支关联远程仓库的情况](#展示本地分支关联远程仓库的情况)
 * [关联远程分支](#关联远程分支)
 * [列出所有远程分支](#列出所有远程分支)
 * [列出本地和远程分支](#列出本地和远程分支)
+* [查看远程分支和本地分支的对应关系](#查看远程分支和本地分支的对应关系)
+* [远程删除了分支本地也想删除](#远程删除了分支本地也想删除)
 * [创建并切换到本地分支](#创建并切换到本地分支)
 * [从远程分支中创建并切换到本地分支](#从远程分支中创建并切换到本地分支)
 * [删除本地分支](#删除本地分支)
@@ -85,13 +88,17 @@ Git是一个 “分布式版本管理工具”，简单的理解版本管理工�
 * [新建并切换到新分支上，同时这个分支没有任何 commit](#新建并切换到新分支上同时这个分支没有任何-commit)
 * [展示任意分支某一文件的内容](#展示任意分支某一文件的内容)
 * [clone 下来指定的单一分支](#clone-下来指定的单一分支)
+* [clone 最新一次提交](#clone-最新一次提交)
 * [忽略某个文件的改动](#忽略某个文件的改动)
 * [忽略文件的权限变化](#忽略文件的权限变化)
 * [以最后提交的顺序列出所有 Git 分支](#以最后提交的顺序列出所有-Git-分支)
 * [在 commit log 中查找相关内容](#在-commit-log-中查找相关内容)
 * [把暂存区的指定 file 放到工作区中](#把暂存区的指定-file-放到工作区中)
 * [强制推送](#强制推送)
+* [git 配置 http 和 socks 代理](#git-配置-http-和-socks-代理)
+* [git 配置 ssh 代理](#git-配置-ssh-代理)
 * [一图详解](#一图详解)
+* [优雅的提交Commit信息](#优雅的提交Commit信息)
 * [联系我](#联系我)
 
 ## 展示帮助信息
@@ -137,6 +144,12 @@ git fetch --all && git reset --hard origin/master
 git update-ref -d HEAD
 ```
 
+## 查看冲突文件列表
+
+展示工作区的冲突文件列表
+```sh
+git diff --name-only --diff-filter=U
+```
 ## 展示工作区和暂存区的不同
 
 输出**工作区**和**暂存区**的 different (不同)。
@@ -165,7 +178,7 @@ git diff --cached
 git diff HEAD
 ```
 
-## 快速切换分支上一个分支
+## 快速切换到上一个分支
 
 ```sh
 git checkout -
@@ -206,6 +219,18 @@ git branch -r
 -a 参数相当于：all
 ```sh
 git branch -a
+```
+
+## 查看远程分支和本地分支的对应关系
+
+```sh
+git remote show origin
+```
+
+## 远程删除了分支本地也想删除
+
+```sh
+git remote prune origin
 ```
 
 ## 创建并切换到本地分支
@@ -293,10 +318,8 @@ git tag -d <tag-name>
 
 ## 删除远程标签
 
-删除远程标签需要**先删除本地标签**，再执行下面的命令：
-
 ```sh
-git push origin :refs/tags/<tag-name>
+git push origin --delete tag <tagname>
 ```
 
 ## 切回到某个标签
@@ -336,14 +359,17 @@ git revert <commit-id>
 ```sh
 git reset <commit-id>  #默认就是-mixed参数。
 
-git reset –mixed HEAD^  #回退至上个版本，它将重置HEAD到另外一个commit,并且重置暂存区以便和HEAD相匹配，但是也到此为止。工作区不会被更改。
+git reset  -- mixed HEAD^  #回退至上个版本，它将重置HEAD到另外一个commit,并且重置暂存区以便和HEAD相匹配，但是也到此为止。工作区不会被更改。
 
-git reset –soft HEAD~3  #回退至三个版本之前，只回退了commit的信息，暂存区和工作区与回退之前保持一致。如果还要提交，直接commit即可  
+git reset -- soft HEAD~3  #回退至三个版本之前，只回退了commit的信息，暂存区和工作区与回退之前保持一致。如果还要提交，直接commit即可  
 
-git reset –hard <commit-id>  #彻底回退到指定commit-id的状态，暂存区和工作区也会变为指定commit-id版本的内容
+git reset -- hard <commit-id>  #彻底回退到指定commit-id的状态，暂存区和工作区也会变为指定commit-id版本的内容
 ```
 
 ## 修改上一个 commit 的描述
+
+如果暂存区有改动，同时也会将暂存区的改动提交到上一个 commit
+
 ```sh
 git commit --amend
 ```
@@ -585,6 +611,14 @@ git show <branch-name>:<file-name>
 git clone -b <branch-name> --single-branch https://github.com/user/repo.git
 ```
 
+## clone 最新一次提交
+
+只会 clone 最近一次提交，将减少 clone 时间
+
+```sh
+git clone --depth=1 https://github.com/user/repo.git
+```
+
 ## 忽略某个文件的改动
 
 关闭 track 指定文件的改动，也就是 Git 将不会在记录这个文件的改动
@@ -638,9 +672,69 @@ git reset <file-name>
 git push -f <remote-name> <branch-name>
 ```
 
+## git 配置 http 和 socks 代理
+
+```sh
+git config --global https.proxy 'http://127.0.0.1:8001'   # 适用于 privoxy 将 socks 协议转为 http 协议的 http 端口
+git config --global http.proxy 'http://127.0.0.1:8001'
+git config --global socks.proxy "127.0.0.1:1080"
+```
+
+## git 配置 ssh 代理
+
+```sh
+$ cat ~/.ssh/config
+Host gitlab.com
+ProxyCommand nc -X 5 -x 127.0.0.1:1080 %h %p    # 直接使用 shadowsocks 提供的 socks5 代理端口
+
+Host github.com
+ProxyCommand nc -X 5 -x 127.0.0.1:1080 %h %p    
+```
+
+
 ## 一图详解
 
-![](git.png)
+![](./assets/git.png)
+
+## 优雅的提交Commit信息
+
+使用[Angular团队提交规范](https://github.com/angular/angular.js/blob/master/DEVELOPERS.md#-git-commit-guidelines)
+
+主要有以下组成
+
+* 标题行: 必填, 描述主要修改类型和内容
+* 主题内容: 描述为什么修改, 做了什么样的修改, 以及开发的思路等等
+* 页脚注释: 放 Breaking Changes 或 Closed Issues
+
+常用的修改项
+
+* type: commit 的类型
+* feat: 新特性
+* fix: 修改问题
+* refactor: 代码重构
+* docs: 文档修改
+* style: 代码格式修改, 注意不是 css 修改
+* test: 测试用例修改
+* chore: 其他修改, 比如构建流程, 依赖管理.
+* scope: commit 影响的范围, 比如: route, component, utils, build...
+* subject: commit 的概述
+* body: commit 具体修改内容, 可以分为多行
+* footer: 一些备注, 通常是 BREAKING CHANGE 或修复的 bug 的链接.
+
+### 使用`Commitizen`代替 git commit
+
+可以使用[cz-cli](https://github.com/commitizen/cz-cli)工具代替 `git commit`
+
+全局安装
+
+```shell
+npm install -g commitizen cz-conventional-changelog
+
+echo '{ "path": "cz-conventional-changelog" }' > ~/.czrc
+```
+全局安装后使用 `git cz` 代替 `git commit`就可以了,如下图
+
+![](./assets/gitcz.png)
 
 ## 联系我
 - 博客园：[削微寒](http://www.cnblogs.com/xueweihan/)
